@@ -1,7 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.testing.utils import assertDataFrameEqual
 from pyspark.sql.types import StructType, StructField, StringType
 
 from quind_demo_ppd_project.flows.portafolios_dynamodb.job import portafolios_dynamodb_job
