@@ -1,0 +1,160 @@
+[0;34m[INFO][0m Executing command: implement_load
+[0;34m[INFO][0m Requirements file: /home/quind/CursorProjects/sparkies-template-spark-project/.template/flows/example/EXAMPLE_REQUIREMENTS.md
+[0;34m[INFO][0m 
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Command to execute: implement_load
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m 
+[0;34m[INFO][0m Executing command using cursor-agent...
+[0;34m[INFO][0m Command file: /home/quind/CursorProjects/sparkies-template-spark-project/.cursor/commands/implement_load.md
+[0;34m[INFO][0m Requirements file: /home/quind/CursorProjects/sparkies-template-spark-project/.template/flows/example/EXAMPLE_REQUIREMENTS.md
+[0;34m[INFO][0m Including outputs from previous commands as context
+[0;34m[INFO][0m 
+[0;32m[SUCCESS][0m Command executed via cursor-agent
+[0;34m[INFO][0m Invoking cursor-agent to execute command...
+
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Cursor Agent Output (streaming in real-time):
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Command execution summary:
+[0;34m[INFO][0m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;34m[INFO][0m Status: success
+
+[0;34m[INFO][0m 🤖 Using model: Auto
+[0;34m[INFO][0m 📝 Generating: 62 chars[0;34m[INFO][0m 📝 Generating: 124 chars
+[0;34m[INFO][0m 📖 Tool #1: Reading /home/quind/CursorProjects/sparkies-template-spark-project/.cursor/commands/implement_load.md
+   [0;32m✅[0m Read 181 lines
+
+[0;34m[INFO][0m 📖 Tool #2: Reading /home/quind/CursorProjects/sparkies-template-spark-project/.template/flows/example/EXAMPLE_REQUIREMENTS.md
+   [0;32m✅[0m Read 175 lines
+
+[0;34m[INFO][0m 📖 Tool #3: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/load.py
+   [0;32m✅[0m Read 140 lines
+
+[0;34m[INFO][0m 📖 Tool #4: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/config/default.toml
+   [0;32m✅[0m Read 292 lines
+
+[0;34m[INFO][0m 📖 Tool #5: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/transform.py
+   [0;32m✅[0m Read 142 lines
+[0;34m[INFO][0m 📝 Generating: 172 chars[0;34m[INFO][0m 📝 Generating: 220 chars
+[0;34m[INFO][0m 📖 Tool #8: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/steps/step_300_build_dynamodb_keys.py
+   [0;32m✅[0m Read 103 lines
+[0;34m[INFO][0m 📝 Generating: 263 chars[0;34m[INFO][0m 📝 Generating: 306 chars
+[0;34m[INFO][0m 📖 Tool #9: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/libs/aws/dynamodb/loader/loader.py
+   [0;32m✅[0m Read 153 lines
+
+[0;34m[INFO][0m 📖 Tool #10: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/libs/aws/dynamodb/loader/__init__.py
+   [0;32m✅[0m Read 7 lines
+
+[0;34m[INFO][0m 📖 Tool #11: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/libs/aws/dynamodb/loader/handlers/factory.py
+   [0;32m✅[0m Read 60 lines
+
+[0;34m[INFO][0m 📖 Tool #12: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/libs/aws/dynamodb/loader/handlers/base.py
+   [0;32m✅[0m Read 163 lines
+[0;34m[INFO][0m 📝 Generating: 353 chars[0;34m[INFO][0m 📝 Generating: 400 chars
+[0;34m[INFO][0m 📖 Tool #13: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/libs/aws/dynamodb/loader/types.py
+   [0;32m✅[0m Read 20 lines
+
+[0;34m[INFO][0m 📖 Tool #14: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/libs/aws/dynamodb/loader/handlers/portfolio_write_handler.py
+   [0;32m✅[0m Read 124 lines
+
+[0;34m[INFO][0m 📖 Tool #15: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/job.py
+   [0;32m✅[0m Read 231 lines
+[0;34m[INFO][0m 📝 Generating: 461 chars[0;34m[INFO][0m 📝 Generating: 522 chars
+[0;34m[INFO][0m 📖 Tool #16: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/libs/aws/dynamodb/loader/handlers/delete_handler.py
+   [0;32m✅[0m Read 53 lines
+[0;34m[INFO][0m 📝 Generating: 559 chars[0;34m[INFO][0m 📝 Generating: 596 chars
+[0;34m[INFO][0m 📖 Tool #19: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project_tests/libs/aws/dynamodb/loader/test_loader.py
+   [0;32m✅[0m Read 151 lines
+[0;34m[INFO][0m 📝 Generating: 660 chars[0;34m[INFO][0m 📝 Generating: 724 chars
+[0;34m[INFO][0m 📖 Tool #21: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/steps/step_200_group_and_aggregate.py
+   [0;32m✅[0m Read 141 lines
+[0;34m[INFO][0m 📝 Generating: 738 chars[0;34m[INFO][0m 📝 Generating: 750 chars[0;34m[INFO][0m 📝 Generating: 763 chars[0;34m[INFO][0m 📝 Generating: 776 chars[0;34m[INFO][0m 📝 Generating: 792 chars[0;34m[INFO][0m 📝 Generating: 805 chars[0;34m[INFO][0m 📝 Generating: 818 chars[0;34m[INFO][0m 📝 Generating: 832 chars[0;34m[INFO][0m 📝 Generating: 850 chars[0;34m[INFO][0m 📝 Generating: 925 chars[0;34m[INFO][0m 📝 Generating: 1126 chars
+[0;34m[INFO][0m 📖 Tool #22: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/steps/step_400_handle_deletions.py
+   [0;32m✅[0m Read 120 lines
+[0;34m[INFO][0m 📝 Generating: 1139 chars[0;34m[INFO][0m 📝 Generating: 1156 chars[0;34m[INFO][0m 📝 Generating: 1231 chars[0;34m[INFO][0m 📝 Generating: 1336 chars
+[0;34m[INFO][0m 📖 Tool #24: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/REFERENCE.md
+   [0;32m✅[0m Read 3677 lines
+[0;34m[INFO][0m 📝 Generating: 1406 chars[0;34m[INFO][0m 📝 Generating: 1476 chars[0;34m[INFO][0m 📝 Generating: 1501 chars[0;34m[INFO][0m 📝 Generating: 1526 chars[0;34m[INFO][0m 📝 Generating: 1607 chars[0;34m[INFO][0m 📝 Generating: 1688 chars
+[0;34m[INFO][0m 📖 Tool #31: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/job.py
+   [0;32m✅[0m Read 231 lines
+[0;34m[INFO][0m 📝 Generating: 1703 chars[0;34m[INFO][0m 📝 Generating: 1720 chars[0;34m[INFO][0m 📝 Generating: 1732 chars[0;34m[INFO][0m 📝 Generating: 1744 chars[0;34m[INFO][0m 📝 Generating: 1758 chars[0;34m[INFO][0m 📝 Generating: 1771 chars[0;34m[INFO][0m 📝 Generating: 1785 chars[0;34m[INFO][0m 📝 Generating: 1797 chars[0;34m[INFO][0m 📝 Generating: 1812 chars[0;34m[INFO][0m 📝 Generating: 1826 chars[0;34m[INFO][0m 📝 Generating: 1843 chars[0;34m[INFO][0m 📝 Generating: 1862 chars[0;34m[INFO][0m 📝 Generating: 1937 chars[0;34m[INFO][0m 📝 Generating: 2186 chars
+[0;34m[INFO][0m 📖 Tool #32: Reading /home/quind/CursorProjects/sparkies-template-spark-project/quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/load.py
+   [0;32m✅[0m Read 191 lines
+[0;34m[INFO][0m 📝 Generating: 2198 chars[0;34m[INFO][0m 📝 Generating: 2215 chars[0;34m[INFO][0m 📝 Generating: 2227 chars[0;34m[INFO][0m 📝 Generating: 2243 chars[0;34m[INFO][0m 📝 Generating: 2258 chars[0;34m[INFO][0m 📝 Generating: 2268 chars[0;34m[INFO][0m 📝 Generating: 2280 chars[0;34m[INFO][0m 📝 Generating: 2292 chars[0;34m[INFO][0m 📝 Generating: 2310 chars[0;34m[INFO][0m 📝 Generating: 2323 chars[0;34m[INFO][0m 📝 Generating: 2337 chars[0;34m[INFO][0m 📝 Generating: 2358 chars[0;34m[INFO][0m 📝 Generating: 2372 chars[0;34m[INFO][0m 📝 Generating: 2386 chars[0;34m[INFO][0m 📝 Generating: 2398 chars[0;34m[INFO][0m 📝 Generating: 2413 chars[0;34m[INFO][0m 📝 Generating: 2431 chars[0;34m[INFO][0m 📝 Generating: 2444 chars[0;34m[INFO][0m 📝 Generating: 2458 chars[0;34m[INFO][0m 📝 Generating: 2473 chars[0;34m[INFO][0m 📝 Generating: 2487 chars[0;34m[INFO][0m 📝 Generating: 2500 chars[0;34m[INFO][0m 📝 Generating: 2513 chars[0;34m[INFO][0m 📝 Generating: 2525 chars[0;34m[INFO][0m 📝 Generating: 2541 chars[0;34m[INFO][0m 📝 Generating: 2554 chars[0;34m[INFO][0m 📝 Generating: 2566 chars[0;34m[INFO][0m 📝 Generating: 2579 chars[0;34m[INFO][0m 📝 Generating: 2595 chars[0;34m[INFO][0m 📝 Generating: 2607 chars[0;34m[INFO][0m 📝 Generating: 2619 chars[0;34m[INFO][0m 📝 Generating: 2633 chars[0;34m[INFO][0m 📝 Generating: 2646 chars[0;34m[INFO][0m 📝 Generating: 2659 chars[0;34m[INFO][0m 📝 Generating: 2671 chars[0;34m[INFO][0m 📝 Generating: 2687 chars[0;34m[INFO][0m 📝 Generating: 2700 chars[0;34m[INFO][0m 📝 Generating: 2714 chars[0;34m[INFO][0m 📝 Generating: 2726 chars[0;34m[INFO][0m 📝 Generating: 2738 chars[0;34m[INFO][0m 📝 Generating: 2751 chars[0;34m[INFO][0m 📝 Generating: 2765 chars[0;34m[INFO][0m 📝 Generating: 2778 chars[0;34m[INFO][0m 📝 Generating: 2790 chars[0;34m[INFO][0m 📝 Generating: 2803 chars[0;34m[INFO][0m 📝 Generating: 2816 chars[0;34m[INFO][0m 📝 Generating: 2831 chars[0;34m[INFO][0m 📝 Generating: 2843 chars[0;34m[INFO][0m 📝 Generating: 2856 chars[0;34m[INFO][0m 📝 Generating: 2871 chars[0;34m[INFO][0m 📝 Generating: 2887 chars[0;34m[INFO][0m 📝 Generating: 2901 chars[0;34m[INFO][0m 📝 Generating: 2914 chars[0;34m[INFO][0m 📝 Generating: 2928 chars[0;34m[INFO][0m 📝 Generating: 2943 chars[0;34m[INFO][0m 📝 Generating: 2958 chars[0;34m[INFO][0m 📝 Generating: 2971 chars[0;34m[INFO][0m 📝 Generating: 2986 chars[0;34m[INFO][0m 📝 Generating: 2999 chars[0;34m[INFO][0m 📝 Generating: 3016 chars[0;34m[INFO][0m 📝 Generating: 3029 chars[0;34m[INFO][0m 📝 Generating: 3045 chars[0;34m[INFO][0m 📝 Generating: 3059 chars[0;34m[INFO][0m 📝 Generating: 3075 chars[0;34m[INFO][0m 📝 Generating: 3089 chars[0;34m[INFO][0m 📝 Generating: 3101 chars[0;34m[INFO][0m 📝 Generating: 3115 chars[0;34m[INFO][0m 📝 Generating: 3130 chars[0;34m[INFO][0m 📝 Generating: 3143 chars[0;34m[INFO][0m 📝 Generating: 3156 chars[0;34m[INFO][0m 📝 Generating: 3168 chars[0;34m[INFO][0m 📝 Generating: 3183 chars[0;34m[INFO][0m 📝 Generating: 3196 chars[0;34m[INFO][0m 📝 Generating: 3211 chars[0;34m[INFO][0m 📝 Generating: 3223 chars[0;34m[INFO][0m 📝 Generating: 3235 chars[0;34m[INFO][0m 📝 Generating: 3249 chars[0;34m[INFO][0m 📝 Generating: 3262 chars[0;34m[INFO][0m 📝 Generating: 3274 chars[0;34m[INFO][0m 📝 Generating: 3291 chars[0;34m[INFO][0m 📝 Generating: 3304 chars[0;34m[INFO][0m 📝 Generating: 3317 chars[0;34m[INFO][0m 📝 Generating: 3329 chars[0;34m[INFO][0m 📝 Generating: 3341 chars[0;34m[INFO][0m 📝 Generating: 3353 chars[0;34m[INFO][0m 📝 Generating: 3368 chars[0;34m[INFO][0m 📝 Generating: 3383 chars[0;34m[INFO][0m 📝 Generating: 3396 chars[0;34m[INFO][0m 📝 Generating: 3412 chars[0;34m[INFO][0m 📝 Generating: 3426 chars[0;34m[INFO][0m 📝 Generating: 3440 chars[0;34m[INFO][0m 📝 Generating: 3458 chars[0;34m[INFO][0m 📝 Generating: 3471 chars[0;34m[INFO][0m 📝 Generating: 3484 chars[0;34m[INFO][0m 📝 Generating: 3497 chars[0;34m[INFO][0m 📝 Generating: 3509 chars[0;34m[INFO][0m 📝 Generating: 3521 chars[0;34m[INFO][0m 📝 Generating: 3534 chars[0;34m[INFO][0m 📝 Generating: 3546 chars[0;34m[INFO][0m 📝 Generating: 3559 chars[0;34m[INFO][0m 📝 Generating: 3571 chars[0;34m[INFO][0m 📝 Generating: 3584 chars[0;34m[INFO][0m 📝 Generating: 3597 chars[0;34m[INFO][0m 📝 Generating: 3614 chars[0;34m[INFO][0m 📝 Generating: 3630 chars[0;34m[INFO][0m 📝 Generating: 3643 chars[0;34m[INFO][0m 📝 Generating: 3658 chars[0;34m[INFO][0m 📝 Generating: 3670 chars[0;34m[INFO][0m 📝 Generating: 3687 chars[0;34m[INFO][0m 📝 Generating: 3705 chars[0;34m[INFO][0m 📝 Generating: 3719 chars[0;34m[INFO][0m 📝 Generating: 3732 chars[0;34m[INFO][0m 📝 Generating: 3744 chars[0;34m[INFO][0m 📝 Generating: 3758 chars[0;34m[INFO][0m 📝 Generating: 3772 chars[0;34m[INFO][0m 📝 Generating: 3784 chars[0;34m[INFO][0m 📝 Generating: 3799 chars[0;34m[INFO][0m 📝 Generating: 3815 chars[0;34m[INFO][0m 📝 Generating: 3828 chars[0;34m[INFO][0m 📝 Generating: 3841 chars[0;34m[INFO][0m 📝 Generating: 3853 chars[0;34m[INFO][0m 📝 Generating: 3866 chars[0;34m[INFO][0m 📝 Generating: 3880 chars[0;34m[INFO][0m 📝 Generating: 3895 chars[0;34m[INFO][0m 📝 Generating: 3907 chars[0;34m[INFO][0m 📝 Generating: 3919 chars[0;34m[INFO][0m 📝 Generating: 3931 chars[0;34m[INFO][0m 📝 Generating: 3944 chars[0;34m[INFO][0m 📝 Generating: 3957 chars[0;34m[INFO][0m 📝 Generating: 3969 chars[0;34m[INFO][0m 📝 Generating: 3985 chars[0;34m[INFO][0m 📝 Generating: 3999 chars[0;34m[INFO][0m 📝 Generating: 4011 chars[0;34m[INFO][0m 📝 Generating: 4024 chars[0;34m[INFO][0m 📝 Generating: 4042 chars[0;34m[INFO][0m 📝 Generating: 4054 chars[0;34m[INFO][0m 📝 Generating: 4071 chars[0;34m[INFO][0m 📝 Generating: 4083 chars[0;34m[INFO][0m 📝 Generating: 4098 chars[0;34m[INFO][0m 📝 Generating: 4117 chars[0;34m[INFO][0m 📝 Generating: 4132 chars[0;34m[INFO][0m 📝 Generating: 4146 chars[0;34m[INFO][0m 📝 Generating: 4161 chars[0;34m[INFO][0m 📝 Generating: 4178 chars[0;34m[INFO][0m 📝 Generating: 4191 chars[0;34m[INFO][0m 📝 Generating: 4203 chars[0;34m[INFO][0m 📝 Generating: 4215 chars[0;34m[INFO][0m 📝 Generating: 4231 chars[0;34m[INFO][0m 📝 Generating: 4245 chars[0;34m[INFO][0m 📝 Generating: 4258 chars[0;34m[INFO][0m 📝 Generating: 4272 chars[0;34m[INFO][0m 📝 Generating: 4284 chars[0;34m[INFO][0m 📝 Generating: 4296 chars[0;34m[INFO][0m 📝 Generating: 4309 chars[0;34m[INFO][0m 📝 Generating: 4323 chars[0;34m[INFO][0m 📝 Generating: 4336 chars[0;34m[INFO][0m 📝 Generating: 4352 chars[0;34m[INFO][0m 📝 Generating: 4365 chars[0;34m[INFO][0m 📝 Generating: 4378 chars[0;34m[INFO][0m 📝 Generating: 4392 chars[0;34m[INFO][0m 📝 Generating: 4406 chars[0;34m[INFO][0m 📝 Generating: 4418 chars[0;34m[INFO][0m 📝 Generating: 4432 chars[0;34m[INFO][0m 📝 Generating: 4444 chars[0;34m[INFO][0m 📝 Generating: 4457 chars[0;34m[INFO][0m 📝 Generating: 4470 chars[0;34m[INFO][0m 📝 Generating: 4484 chars[0;34m[INFO][0m 📝 Generating: 4499 chars[0;34m[INFO][0m 📝 Generating: 4513 chars[0;34m[INFO][0m 📝 Generating: 4531 chars[0;34m[INFO][0m 📝 Generating: 4546 chars[0;34m[INFO][0m 📝 Generating: 4560 chars[0;34m[INFO][0m 📝 Generating: 4573 chars[0;34m[INFO][0m 📝 Generating: 4585 chars[0;34m[INFO][0m 📝 Generating: 4601 chars[0;34m[INFO][0m 📝 Generating: 4613 chars[0;34m[INFO][0m 📝 Generating: 4626 chars[0;34m[INFO][0m 📝 Generating: 4643 chars[0;34m[INFO][0m 📝 Generating: 4656 chars[0;34m[INFO][0m 📝 Generating: 4669 chars[0;34m[INFO][0m 📝 Generating: 4681 chars[0;34m[INFO][0m 📝 Generating: 4697 chars[0;34m[INFO][0m 📝 Generating: 4713 chars[0;34m[INFO][0m 📝 Generating: 4730 chars[0;34m[INFO][0m 📝 Generating: 4809 chars[0;34m[INFO][0m 📝 Generating: 7436 chars
+
+[0;32m[SUCCESS][0m 🎯 Completed in 148900ms (151s total)
+[0;34m[INFO][0m 📊 Final stats: 32 tools, 7436 chars generated
+
+Revisando los archivos relevantes para implementar `load.py`.
+
+Buscando utilidades de DynamoDB en el proyecto:
+
+Revisando el loader de DynamoDB existente:
+
+Revisando los tipos y el handler de portfolio:
+
+Revisando el handler de delete y la configuración necesaria:
+
+Buscando ejemplos de uso del loader:
+
+Revisando el step_200 para entender cómo se comprime productos:
+
+Implementando `load.py`. El handler espera `productos_json` (string), pero el transform ya comprime a `productos` (binary). Ajustando el load para adaptar los datos al formato esperado por el handler.
+
+Implementando `load.py`. Agregando la configuración necesaria y luego implementando la función de carga:
+
+Agregando la configuración necesaria y luego implementando `load.py`:
+
+Implementando `load.py`:
+
+Verificando errores de linting y revisando si `job.py` necesita actualizaciones:
+
+Revisando que todo esté correcto. El `job.py` no pasa `first_run`; por ahora el load usa `first_run=False` por defecto. Cuando se implemente la detección de first run, se puede pasar como parámetro.
+
+Verificando que la implementación esté completa:
+
+Implementación de `load.py` completada. Resumen:
+
+## Resumen de la implementación
+
+**Estado:** success
+
+**Archivos creados:** Ninguno
+
+**Archivos modificados:**
+- `quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/load.py` - Implementación completa del módulo de carga
+- `quind-ppd-project/quind_ppd_project/flows/portafolios_dynamodb/config/default.toml` - Agregada configuración de DynamoDB (region, item_size_limit)
+
+**Decisiones clave:**
+1. Estrategia de carga: merge (upsert basado en PK+SK) según requisitos
+2. Separación de operaciones: los datos transformados se separan en `data_to_write` (UPSERT) y `data_to_delete` (DELETE) usando la columna `_operation`
+3. Conversión de productos: descompresión de `productos` (binary GZIP) a `productos_json` (string JSON) para el handler, que luego lo comprime nuevamente
+4. Integración con DynamoDBLoader: uso del loader existente con handlers `portfolio_writer` y `delete`
+5. Manejo de first_run: parámetro opcional que, cuando es `True`, omite operaciones DELETE en la primera ejecución
+6. Reparticionamiento: uso de `num_partitions.min_global` (10) para optimizar el procesamiento paralelo antes de escribir a DynamoDB
+7. Configuración agregada: `region` (desde AWS_REGION) e `item_size_limit` (389120 bytes) en `default.toml`
+
+**Información del esquema:**
+- Input schema: DataFrame transformado con columnas:
+  - `pk`, `sk`, `gsi1_pk`, `gsi1_sk`, `gsi2_pk`, `gsi2_sk` (String)
+  - `productos` (Binary - GZIP comprimido)
+  - `fecha_actualizacion` (String - ISO 8601)
+  - `_operation` (String - "UPSERT" o "DELETE")
+- Output schema: Items escritos/eliminados en DynamoDB:
+  - Para UPSERT: todos los campos incluyendo `productos` (Binary comprimido por el handler)
+  - Para DELETE: solo claves (pk, sk) para identificación
+
+**Próximos pasos:**
+1. Implementar detección de first_run en `job.py` o `extract.py` para pasar el parámetro `first_run` al load cuando corresponda
+2. Agregar lógica de commit de CDC en `job.py` (llamar `changelog_manager.commit_changes()` después de una carga exitosa) para persistir el tag del snapshot
+3. Implementar tests unitarios para `load.py` verificando separación de operaciones, conversión de productos y integración con DynamoDBLoader
+4. Configurar variable de entorno `AWS_REGION` en el entorno de ejecución
+5. Probar el flujo completo con datos de muestra para verificar que las escrituras/eliminaciones funcionan correctamente en DynamoDB
+
+**Errores:** Ninguno
+
+La implementación está lista y sigue los patrones del proyecto, usando el `DynamoDBLoader` existente y manejando operaciones UPSERT y DELETE según los requisitos.

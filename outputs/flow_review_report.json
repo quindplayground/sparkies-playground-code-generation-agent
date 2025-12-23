@@ -1,0 +1,115 @@
+{
+  "status": "needs_correction",
+  "requirements_file": ".template/flows/example/EXAMPLE_REQUIREMENTS.md",
+  "flow_name": "portafolios_dynamodb",
+  "requirements_coverage": {
+    "total_requirements": 25,
+    "met_requirements": 18,
+    "missing_requirements": 7,
+    "unnecessary_implementations": 0,
+    "coverage_percentage": 72.0
+  },
+  "gaps": [
+    {
+      "severity": "high",
+      "module": "transform/steps/step_200_group_and_aggregate",
+      "requirement": "Aggregate productos array: Collect all material records for each combination. Exclude specified columns from productos array (lines 104-105 of requirements). The productos array must contain all columns from source EXCEPT the excluded columns listed in requirements (lines 69-96).",
+      "current_implementation": "Only collects cod_material into productos array. Does not include other material fields or exclude the specified columns.",
+      "gap_description": "step_200_group_and_aggregate.py only aggregates cod_material into productos array. According to requirements, productos should contain ALL columns from source records EXCEPT the 27 excluded columns listed in requirements. Current implementation only includes cod_material, missing all other material attributes.",
+      "redirect_to": "implement_transform",
+      "fix_instructions": "Modify step_200_group_and_aggregate.py to: 1) Collect all columns from source DataFrame except excluded columns, 2) Create struct with all non-excluded columns for each material record, 3) Aggregate these structs into productos array. Excluded columns: cod_condicion_pago_area_venta, cod_tipo_jerarquia, cod_clas_fiscal_cliente_1, cod_clas_fiscal_cliente_2, cod_clas_fiscal_material_1, cod_clas_fiscal_material_2, cod_categoria, cod_subcategoria, cod_linea, cod_sublinea, cod_marca, cod_submarca, ind_material_activo, ind_cliente_activo, cod_secuencia_exclusion, cod_clase_condicion_exclusion, cod_secuencia_sustitucion, cod_clase_condicion_sustitucion, ban_pb_ind_cliente, ban_bloqueo_soporte_ind_cliente, ban_bloqueo_pedido_area_venta_cliente, ban_pb_area_venta_cliente, ban_pb_niv_canal_material, ban_pb_mandante_material, des_aplica_ibua_en_ventas, des_calculo_valor_ibua, des_hash_contenido_registro"
+    },
+    {
+      "severity": "high",
+      "module": "transform/steps/step_400_format_output",
+      "requirement": "Compress productos array to GZIP JSON (line 106 of requirements). productos attribute must be GZIP compressed (line 154 of requirements).",
+      "current_implementation": "Converts productos array to JSON string using sf.to_json() but does NOT compress it with GZIP.",
+      "gap_description": "step_400_format_output.py converts productos to JSON string but does not compress it with GZIP. Requirements explicitly state that productos must be GZIP compressed before storing in DynamoDB.",
+      "redirect_to": "implement_transform",
+      "fix_instructions": "Modify step_400_format_output.py to compress the JSON string using GZIP compression. Use Python's gzip module or PySpark UDF to compress the JSON string before storing it. The compressed data should be stored as bytes or base64-encoded string in DynamoDB."
+    },
+    {
+      "severity": "high",
+      "module": "load",
+      "requirement": "Handle deletions: Records that become inactive (ind_cliente_activo = false OR ind_material_activo = false) must be deleted from DynamoDB (line 115 of requirements). Records that become inactive must be deleted from DynamoDB (line 159 of requirements). CDC must track both inserts/updates and deletes (line 160 of requirements).",
+      "current_implementation": "Always passes empty DataFrame for data_to_delete. Does not identify records that became inactive from CDC changelog.",
+      "gap_description": "load.py always creates an empty DataFrame for data_to_delete, regardless of CDC changes. Requirements specify that records becoming inactive (ind_cliente_activo = false OR ind_material_activo = false) must be deleted from DynamoDB. The CDC changelog contains change_type indicators that should be used to identify deletions.",
+      "redirect_to": "implement_load",
+      "fix_instructions": "Modify load.py to: 1) Accept transformed_data that includes change_type information from CDC, 2) Filter records where change_type indicates deletion or where records became inactive, 3) Build deletion records with pk+sk keys for these records, 4) Pass deletion records to data_to_delete parameter. The CDC changelog from extract() includes change_type column that indicates 'I' (insert), 'U' (update), 'D' (delete)."
+    },
+    {
+      "severity": "high",
+      "module": "job",
+      "requirement": "First run detection: Auto-detect (check if target table is empty) (line 130 of requirements). Handle deletions: Records that become inactive must be deleted from DynamoDB (line 159 of requirements).",
+      "current_implementation": "Does not implement first_run detection. Does not pass first_run parameter to load(). Does not handle deletion logic based on CDC changes.",
+      "gap_description": "job.py does not detect first_run by checking if DynamoDB table is empty. It also does not pass first_run parameter to load() function. Additionally, it does not separate active records from inactive records for deletion handling.",
+      "redirect_to": "implement_job",
+      "fix_instructions": "Modify job.py to: 1) Detect first_run by checking if DynamoDB table is empty (use DynamoDB describe_table or scan with limit=1), 2) Pass first_run parameter to load() function, 3) Process CDC changelog to separate active records (for writing) from inactive/deleted records (for deletion), 4) Pass both data_to_write and data_to_delete to load() function based on change_type and active flags."
+    },
+    {
+      "severity": "medium",
+      "module": "transform/steps/step_100_filter_active",
+      "requirement": "Filter active records: ind_cliente_activo = true AND ind_material_activo = true (line 102 of requirements). Only load active records (line 118 of requirements).",
+      "current_implementation": "Filters active records correctly, but this filtering happens BEFORE processing CDC changes. Should also handle inactive records for deletion.",
+      "gap_description": "step_100_filter_active correctly filters active records, but the transform pipeline only processes active records. According to requirements, inactive records should be identified and passed to load() for deletion. The current implementation loses track of inactive records.",
+      "redirect_to": "implement_transform",
+      "fix_instructions": "Modify transform.py to handle both active and inactive records: 1) Separate active records (for writing) from inactive records (for deletion), 2) Process active records through the transformation pipeline, 3) Process inactive records to extract only pk+sk keys for deletion, 4) Return both transformed active records and deletion keys. Alternatively, handle this separation in job.py after extract() and before transform()."
+    },
+    {
+      "severity": "medium",
+      "module": "config/default.toml",
+      "requirement": "DynamoDB table name: portafolio-cliente-{environment} (line 32 of requirements). Environment variables: DYNAMODB_TABLE_PREFIX: portafolio-cliente-, RESOURCE_SUFFIX: (to be determined from environment) (lines 139-140 of requirements).",
+      "current_implementation": "table_name is hardcoded as 'portafolios' in config. Does not use DYNAMODB_TABLE_PREFIX or RESOURCE_SUFFIX environment variables.",
+      "gap_description": "Configuration does not construct DynamoDB table name using environment variables as specified in requirements. Should use format: {DYNAMODB_TABLE_PREFIX}{RESOURCE_SUFFIX} = portafolio-cliente-{environment}.",
+      "redirect_to": "setup_flow_structure",
+      "fix_instructions": "Modify config/default.toml to use format strings for table_name: table_name = \"@format {env[DYNAMODB_TABLE_PREFIX]}{env[RESOURCE_SUFFIX]}\" or table_name = \"@format portafolio-cliente-{env[RESOURCE_SUFFIX]}\" to construct the full table name from environment variables."
+    },
+    {
+      "severity": "low",
+      "module": "transform/steps/step_400_format_output",
+      "requirement": "Extract fecha_actualizacion from fec_actualizacion_dl as ISO 8601 timestamp (line 114 of requirements). fecha_actualizacion: ISO 8601 timestamp extracted from fec_actualizacion_dl (line 65 of requirements).",
+      "current_implementation": "Formats fecha_actualizacion but assumes fec_actualizacion_dl is in format 'yyyy-MM-dd HH:mm:ss'. May fail if source format differs.",
+      "gap_description": "step_400_format_output.py hardcodes the timestamp format. Should handle various timestamp formats or use a more robust parsing method.",
+      "redirect_to": "implement_transform",
+      "fix_instructions": "Enhance step_400_format_output.py to handle multiple timestamp formats or use a more robust timestamp parsing method. Consider using sf.to_timestamp() with multiple format options or casting to timestamp type first."
+    }
+  ],
+  "redirects": [
+    "implement_transform",
+    "implement_load",
+    "implement_job",
+    "setup_flow_structure"
+  ],
+  "reimplementation_instructions": {
+    "automatic": "Execute orchestration script: .template/flows/scripts/orchestrate_flow.sh --requirements .template/flows/example/EXAMPLE_REQUIREMENTS.md --start-from setup_flow_structure",
+    "manual": [
+      "1. Execute: setup_flow_structure (to fix DynamoDB table name configuration)",
+      "2. Execute: implement_transform (to fix step_200 aggregation, step_400 GZIP compression, and step_100 inactive record handling)",
+      "3. Execute: implement_load (to fix deletion handling based on CDC changes)",
+      "4. Execute: implement_job (to add first_run detection and proper deletion logic)"
+    ]
+  },
+  "recommendations": [
+    "Fix step_200_group_and_aggregate to include ALL columns except excluded ones in productos array",
+    "Add GZIP compression to productos JSON in step_400_format_output",
+    "Implement deletion handling in load.py to process inactive records from CDC changelog",
+    "Add first_run detection in job.py by checking if DynamoDB table is empty",
+    "Separate active records (for writing) from inactive records (for deletion) in transform pipeline or job.py",
+    "Update config/default.toml to use environment variables for DynamoDB table name construction",
+    "Consider adding integration tests that verify GZIP compression and decompression work correctly",
+    "Consider adding tests for deletion logic with CDC changelog containing change_type='D'"
+  ],
+  "test_status": {
+    "unit_tests_exist": true,
+    "unit_tests_passing": true,
+    "test_count": 21,
+    "coverage_concern": "Tests pass but do not cover GZIP compression, deletion logic, or first_run detection scenarios. Need additional tests for these features."
+  },
+  "implementation_quality": {
+    "code_structure": "good",
+    "error_handling": "good",
+    "logging": "good",
+    "test_coverage": "moderate",
+    "requirements_alignment": "needs_improvement"
+  }
+}
