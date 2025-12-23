@@ -92,13 +92,18 @@ def extract(
 
         result = changelog_manager.get_changelog_table(changelog_strategy="iceberg_sp")
 
+    try:
+        row_count = result.count()
+    except Exception:
+        row_count = None
+
     logger.info(
         "Data extraction completed",
         extra={
             "attributes": {
                 "source_table": source_table_id,
                 "extraction_mode": "full" if first_run else "incremental",
-                "row_count": result.count(),
+                "row_count": row_count,
             }
         },
     )
