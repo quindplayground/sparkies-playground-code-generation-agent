@@ -31,6 +31,14 @@ def step_300_build_dynamodb_keys(dataframe: DataFrame) -> DataFrame:
     cod_canal_str = sf.col("cod_canal").cast("string")
     cod_vendedor_str = sf.col("cod_vendedor").cast("string")
 
+    fecha_actualizacion_expr = sf.date_format(
+        sf.to_utc_timestamp(
+            sf.col("fec_actualizacion_dl"),
+            sf.lit("America/Bogota"),
+        ),
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+    )
+
     result = dataframe.select(
         *dataframe.columns,
         cod_transaccional_str.alias("pk"),
@@ -48,13 +56,7 @@ def step_300_build_dynamodb_keys(dataframe: DataFrame) -> DataFrame:
         ).alias("gsi1_sk"),
         cod_vendedor_str.alias("gsi2_pk"),
         cod_transaccional_str.alias("gsi2_sk"),
-        sf.date_format(
-            sf.to_utc_timestamp(
-                sf.col("fec_actualizacion_dl"),
-                sf.lit("America/Bogota"),
-            ),
-            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-        ).alias("fecha_actualizacion"),
+        fecha_actualizacion_expr.alias("fecha_actualizacion"),
     )
 
     return result

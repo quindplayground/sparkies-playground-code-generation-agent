@@ -71,6 +71,10 @@ def step_200_group_and_aggregate(dataframe: DataFrame) -> DataFrame:
 
     productos_struct = sf.struct(*[sf.col(col).alias(col) for col in productos_columns])
 
+    num_partitions = dataframe.rdd.getNumPartitions()
+    if num_partitions < 10:
+        dataframe = dataframe.repartition(200, *group_by_columns)
+
     grouped = (
         dataframe.groupBy(*group_by_columns)
         .agg(sf.collect_list(productos_struct).alias("productos"))

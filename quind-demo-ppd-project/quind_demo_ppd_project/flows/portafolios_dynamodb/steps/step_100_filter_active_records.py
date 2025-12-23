@@ -13,7 +13,8 @@ def step_100_filter_active_records(dataframe: DataFrame) -> DataFrame:
 
     Keeps only records where ind_cliente_activo = true AND
     ind_material_activo = true. Filtering is done early to reduce
-    data volume for subsequent operations.
+    data volume for subsequent operations. After filtering, coalesces
+    partitions to reduce overhead if data volume is significantly reduced.
 
     Args:
         dataframe: Input DataFrame with portfolio data.
@@ -25,5 +26,9 @@ def step_100_filter_active_records(dataframe: DataFrame) -> DataFrame:
         (sf.col("ind_cliente_activo") == True)
         & (sf.col("ind_material_activo") == True)
     )
+
+    num_partitions = filtered.rdd.getNumPartitions()
+    if num_partitions > 200:
+        filtered = filtered.coalesce(200)
 
     return filtered
