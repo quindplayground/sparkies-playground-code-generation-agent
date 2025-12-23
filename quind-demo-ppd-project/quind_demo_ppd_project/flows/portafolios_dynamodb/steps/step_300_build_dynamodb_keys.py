@@ -32,7 +32,7 @@ def step_300_build_dynamodb_keys(dataframe: DataFrame) -> DataFrame:
     cod_vendedor_str = sf.col("cod_vendedor").cast("string")
 
     result = dataframe.select(
-        *dataframe.columns,
+        sf.col("productos"),
         cod_transaccional_str.alias("pk"),
         sf.concat_ws(
             "#",
