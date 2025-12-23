@@ -98,7 +98,6 @@ def extract(
             "attributes": {
                 "source_table": source_table_id,
                 "extraction_mode": "full" if first_run else "incremental",
-                "row_count": result.count(),
             }
         },
     )
