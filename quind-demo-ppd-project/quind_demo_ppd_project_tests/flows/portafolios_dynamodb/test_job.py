@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch, ANY
-from pyspark.sql import SparkSession, DataFrame
+from pyspark.sql import SparkSession
 from pyspark.testing.utils import assertDataFrameEqual
 from pyspark.sql.types import StructType, StructField, StringType
 

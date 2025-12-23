@@ -6,7 +6,6 @@ and aggregates materials into a products array.
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as sf
-from pyspark.sql.types import StructType, StructField, StringType
 
 
 def step_200_group_and_aggregate(dataframe: DataFrame) -> DataFrame:
@@ -46,10 +45,8 @@ def step_200_group_and_aggregate(dataframe: DataFrame) -> DataFrame:
         "cod_canal",
         "cod_vendedor"
     ).agg(
-        sf.collect_list(
-            sf.struct(sf.col("cod_material").alias("cod_material"))
-        ).alias("productos"),
+        sf.collect_list("cod_material").alias("productos"),
         sf.max("fec_actualizacion_dl").alias("fec_actualizacion_dl")
     )
     
-    return result.coalesce(200)
+    return result

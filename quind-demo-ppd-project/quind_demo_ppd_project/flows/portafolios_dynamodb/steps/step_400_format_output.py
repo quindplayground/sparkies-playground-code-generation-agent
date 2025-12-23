@@ -57,4 +57,4 @@ def step_400_format_output(dataframe: DataFrame) -> DataFrame:
         ).alias("fecha_actualizacion")
     )
     
-    return result.coalesce(200)
+    return result
