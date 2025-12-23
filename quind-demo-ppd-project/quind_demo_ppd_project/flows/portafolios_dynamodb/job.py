@@ -78,6 +78,8 @@ def portafolios_dynamodb_job(spark: SparkSession, vars_instance: VarsResource) -
 
     snapshot_manager = SnapshotManager(spark=spark, table_id=input_table_id)
 
+    # TODO(user): Verify restart functionality is required by flow requirements document
+    # Restart logic should only be implemented if explicitly required by flow requirements
     restart_flag = getattr(vars_instance.vars, "restart", {}).get(component_name, False)
     if restart_flag:
         logger.info(
@@ -126,6 +128,8 @@ def portafolios_dynamodb_job(spark: SparkSession, vars_instance: VarsResource) -
             },
         )
 
+    # TODO(user): Verify first-run detection is required by flow requirements document
+    # First-run detection should only be implemented if explicitly required by flow requirements
     first_run = not snapshot_manager.last_snapshot_tag_exists(tag_name)
 
     logger.info(
@@ -142,6 +146,8 @@ def portafolios_dynamodb_job(spark: SparkSession, vars_instance: VarsResource) -
         },
     )
 
+    # TODO(user): Verify change detection is required by flow requirements document
+    # Change detection should only be implemented if explicitly required by flow requirements
     if not first_run:
         logger.info(
             "Checking for changes in source table",
@@ -290,6 +296,8 @@ def portafolios_dynamodb_job(spark: SparkSession, vars_instance: VarsResource) -
         },
     )
 
+    # TODO(user): Verify snapshot tagging is required by flow requirements document
+    # Snapshot tagging should only be implemented if explicitly required by flow requirements
     logger.info(
         "Tagging current snapshot for next incremental run",
         extra={

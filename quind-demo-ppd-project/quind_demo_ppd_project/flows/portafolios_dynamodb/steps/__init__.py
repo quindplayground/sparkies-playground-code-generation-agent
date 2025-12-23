@@ -1,7 +1,6 @@
-"""Steps module for analytics flow transformations.
+"""Steps module for portafolios_dynamodb flow transformations.
 
-This module contains individual transformation steps that can be organized
-and reused across different analytics flows.
+This module contains individual transformation steps for the portafolios_dynamodb flow.
 
 Steps are typically numbered (step_100, step_200, etc.) to indicate
 execution order, though the actual order is determined by the transform()
