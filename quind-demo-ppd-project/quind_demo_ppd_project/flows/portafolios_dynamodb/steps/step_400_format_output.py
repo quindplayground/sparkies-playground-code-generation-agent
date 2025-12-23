@@ -29,7 +29,7 @@ def step_400_format_output(dataframe: DataFrame) -> DataFrame:
             - gsi1_sk
             - gsi2_pk
             - gsi2_sk
-            - productos: Array of structs
+            - productos: Array of strings (material codes)
             - fec_actualizacion_dl: Timestamp string
 
     Returns:
@@ -43,6 +43,8 @@ def step_400_format_output(dataframe: DataFrame) -> DataFrame:
             - productos: JSON string
             - fecha_actualizacion: ISO formatted timestamp
     """
+    # Optimize: Use column operations (to_timestamp, date_format) instead of row operations
+    # All operations are performed at column level for better performance
     result = dataframe.select(
         sf.col("cod_transaccional").alias("pk"),
         sf.col("sk"),
@@ -52,7 +54,7 @@ def step_400_format_output(dataframe: DataFrame) -> DataFrame:
         sf.col("gsi2_sk"),
         sf.to_json(sf.col("productos")).alias("productos"),
         sf.date_format(
-            sf.to_timestamp("fec_actualizacion_dl", "yyyy-MM-dd HH:mm:ss"),
+            sf.to_timestamp(sf.col("fec_actualizacion_dl"), "yyyy-MM-dd HH:mm:ss"),
             "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
         ).alias("fecha_actualizacion")
     )

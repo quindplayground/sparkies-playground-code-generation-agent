@@ -3,76 +3,100 @@
   "requirements_file": ".template/flows/example/EXAMPLE_REQUIREMENTS.md",
   "flow_name": "portafolios_dynamodb",
   "requirements_coverage": {
-    "total_requirements": 18,
+    "total_requirements": 20,
     "met_requirements": 13,
-    "missing_requirements": 5,
+    "missing_requirements": 7,
     "unnecessary_implementations": 0,
-    "coverage_percentage": 72.2
+    "coverage_percentage": 65.0
   },
   "gaps": [
     {
       "severity": "high",
-      "module": "transform/steps/step_200_group_and_aggregate",
+      "module": "transform",
       "requirement": "Aggregate productos array: Collect all material records for each combination. Exclude specified columns from productos array (cod_condicion_pago_area_venta, cod_tipo_jerarquia, cod_clas_fiscal_cliente_1, cod_clas_fiscal_cliente_2, cod_clas_fiscal_material_1, cod_clas_fiscal_material_2, cod_categoria, cod_subcategoria, cod_linea, cod_sublinea, cod_marca, cod_submarca, ind_material_activo, ind_cliente_activo, cod_secuencia_exclusion, cod_clase_condicion_exclusion, cod_secuencia_sustitucion, cod_clase_condicion_sustitucion, ban_pb_ind_cliente, ban_bloqueo_soporte_ind_cliente, ban_bloqueo_pedido_area_venta_cliente, ban_pb_area_venta_cliente, ban_pb_niv_canal_material, ban_pb_mandante_material, des_aplica_ibua_en_ventas, des_calculo_valor_ibua, des_hash_contenido_registro)",
-      "current_implementation": "Only collects cod_material into productos array. Does not include other material/client columns and does not exclude the specified columns.",
-      "gap_description": "The step_200_group_and_aggregate function only aggregates cod_material, but requirements specify that productos array should contain all material records (all columns) EXCEPT the excluded columns listed in requirements. Currently missing all other columns from the productos array.",
+      "current_implementation": "step_200_group_and_aggregate only collects cod_material into productos array using collect_list('cod_material'). Does not include other material fields or exclude specified columns.",
+      "gap_description": "The productos array should contain all material record fields (as JSON objects) for each combination, excluding the specified columns. Currently only cod_material is collected.",
       "redirect_to": "implement_transform",
-      "fix_instructions": "Modify step_200_group_and_aggregate.py to collect all columns from the dataframe into a struct for productos array, then exclude the specified columns. Use collect_list with struct containing all columns except the excluded ones."
+      "fix_instructions": "Modify step_200_group_and_aggregate to collect all columns except the excluded ones. Use collect_list with struct() to create array of material objects. Each element should be a struct containing all material fields except the excluded columns."
     },
     {
       "severity": "high",
-      "module": "transform/steps/step_400_format_output",
-      "requirement": "Compress productos array to GZIP JSON. productos: Array/List JSON compressed in GZIP containing materials associated with the client",
-      "current_implementation": "Converts productos array to JSON string using sf.to_json(), but does not compress with GZIP",
-      "gap_description": "The step_400_format_output function converts productos to JSON string but does not apply GZIP compression as required. Requirements explicitly state productos must be GZIP compressed.",
+      "module": "transform",
+      "requirement": "Compress productos array to GZIP JSON",
+      "current_implementation": "step_400_format_output converts productos array to JSON string using to_json() but does not compress to GZIP",
+      "gap_description": "The productos attribute must be GZIP compressed JSON. Current implementation only converts to JSON string without compression.",
       "redirect_to": "implement_transform",
-      "fix_instructions": "Modify step_400_format_output.py to compress the JSON string using GZIP compression. Import gzip module and compress the JSON bytes before storing in productos column."
+      "fix_instructions": "Modify step_400_format_output to compress the JSON string using GZIP compression. Use Python's gzip module or Spark UDF to compress the JSON string before storing in productos column."
     },
     {
       "severity": "high",
+      "module": "transform",
+      "requirement": "Handle deletions: Records that become inactive (ind_cliente_activo = false OR ind_material_activo = false) must be deleted from DynamoDB",
+      "current_implementation": "load.py has structure for data_to_delete but always creates empty DataFrame. No logic to detect inactive records from CDC changelog.",
+      "gap_description": "The flow must detect records that become inactive from the CDC changelog and add them to data_to_delete. Currently data_to_delete is always empty.",
+      "redirect_to": "implement_transform",
+      "fix_instructions": "Add logic in transform.py or a new step to detect records with _change_type='delete' or records where ind_cliente_activo=false OR ind_material_activo=false. These records should be transformed to have the same key structure (pk, sk) and passed to load as data_to_delete."
+    },
+    {
+      "severity": "medium",
       "module": "job",
-      "requirement": "First run detection: Auto-detect (check if target table is empty). Handle deletions: Records that become inactive (ind_cliente_activo = false OR ind_material_activo = false) must be deleted from DynamoDB",
-      "current_implementation": "Job does not detect first_run. Job does not identify inactive records for deletion. Load function always receives empty data_to_delete DataFrame.",
-      "gap_description": "Job module does not implement first_run detection by checking if DynamoDB table is empty. Job does not identify records that became inactive (from CDC changelog with DELETE operations or records filtered out in step_100) to pass to load function for deletion.",
+      "requirement": "First run detection: Auto-detect (check if target table is empty)",
+      "current_implementation": "job.py does not implement first_run detection. It always calls extract, transform, and load without checking if target table is empty.",
+      "gap_description": "The job should detect if this is the first run by checking if DynamoDB table is empty. On first run, only write operations should be executed. On subsequent runs, both write and delete operations should be executed.",
       "redirect_to": "implement_job",
-      "fix_instructions": "Modify job.py to: 1) Detect first_run by checking if DynamoDB table is empty (use DynamoDBLoader or AWS SDK to check), 2) Identify inactive records from CDC changelog (records with _change_type='DELETE' or records filtered out in step_100), 3) Pass inactive records to load function as data_to_delete, 4) Pass first_run flag to load function."
+      "fix_instructions": "Add first_run detection logic in job.py before calling load. Check if DynamoDB table is empty (query table with limit 1). Pass first_run parameter to load() function. DynamoDB table name is available in vars_instance.vars.output.table_name."
+    },
+    {
+      "severity": "medium",
+      "module": "job",
+      "requirement": "Restart capability: true",
+      "current_implementation": "job.py does not implement restart capability. No logic to check restart flag or truncate/restart DynamoDB table.",
+      "gap_description": "The flow should support restart capability by checking a restart flag in configuration and truncating/restarting the DynamoDB table when flag is set to true.",
+      "redirect_to": "implement_job",
+      "fix_instructions": "Add restart logic in job.py at the beginning. Check vars_instance.vars.restart.get(component_name, False). If true, use DynamoDB truncate utilities to clear the table. Then proceed with normal ETL flow."
     },
     {
       "severity": "medium",
       "module": "load",
-      "requirement": "Handle deletions: Records that become inactive must be deleted from DynamoDB. DELETE operations are only executed when first_run=False",
-      "current_implementation": "Load function always creates empty data_to_delete DataFrame. Never receives actual records to delete from job.py",
-      "gap_description": "Load function has infrastructure to handle deletes (delete_handler parameter) but always receives empty DataFrame for data_to_delete. Job.py never identifies or passes inactive records for deletion.",
-      "redirect_to": "implement_job",
-      "fix_instructions": "This gap will be fixed when job.py is updated to identify and pass inactive records. Load function already has correct infrastructure, just needs data_to_delete to be populated by job.py."
+      "requirement": "Load strategy: Merge (upsert based on PK+SK). Idempotency: Load must be idempotent: repeating the load should not generate duplicate items. Same keys must update existing item in DynamoDB.",
+      "current_implementation": "load.py uses DynamoDBLoader with portfolio_writer handler and delete handler. The implementation appears correct for upsert operations, but verification needed that handler properly implements idempotent upsert.",
+      "gap_description": "The load implementation uses DynamoDBLoader which should handle upsert correctly, but needs verification that the portfolio_writer handler implements idempotent upsert based on PK+SK combination.",
+      "redirect_to": "implement_load",
+      "fix_instructions": "Verify that DynamoDBLoader portfolio_writer handler implements idempotent upsert. Ensure that PutItem or UpdateItem operations use PK+SK as key and update existing items rather than creating duplicates. If handler does not implement this correctly, modify handler or load logic."
     },
     {
       "severity": "low",
-      "module": "transform/steps/step_200_group_and_aggregate",
-      "requirement": "Group by combination: cod_transaccional + cod_org_vent + cod_canal + cod_vendedor",
-      "current_implementation": "Groups correctly by the 4 columns, but uses hardcoded coalesce(200) which may not match num_partitions configuration",
-      "gap_description": "Step uses hardcoded coalesce(200) instead of using num_partitions configuration from vars_instance. This is a minor optimization issue.",
-      "redirect_to": "optimize_flow",
-      "fix_instructions": "Consider using vars_instance.vars.num_partitions.min_global instead of hardcoded 200, or remove coalesce if not needed for performance."
+      "module": "config",
+      "requirement": "Environment variables: DYNAMODB_TABLE_PREFIX: portafolio-cliente-",
+      "current_implementation": "config/default.toml uses table_name = 'portafolios' but does not use DYNAMODB_TABLE_PREFIX environment variable to construct full table name with environment suffix.",
+      "gap_description": "The table name should be constructed using DYNAMODB_TABLE_PREFIX + environment suffix. Current config uses static table_name.",
+      "redirect_to": "setup_flow_structure",
+      "fix_instructions": "Update config/default.toml to use format string for table_name: table_name = '@format {env[DYNAMODB_TABLE_PREFIX]}{env[RESOURCE_SUFFIX]}' or similar pattern to construct table name dynamically."
     }
   ],
   "redirects": [
     "implement_transform",
-    "implement_job"
+    "implement_job",
+    "implement_load",
+    "setup_flow_structure"
   ],
   "reimplementation_instructions": {
     "automatic": "Execute orchestration script: .template/flows/scripts/orchestrate_flow.sh --requirements .template/flows/example/EXAMPLE_REQUIREMENTS.md --start-from implement_transform",
     "manual": [
-      "1. Execute: implement_transform (with requirements file) - Fix step_200_group_and_aggregate to include all columns except excluded ones, and fix step_400_format_output to add GZIP compression",
-      "2. Execute: implement_job (with requirements file) - Add first_run detection and inactive record identification for deletion"
+      "1. Execute: implement_transform (fix productos array aggregation, add GZIP compression, add deletion detection logic)",
+      "2. Execute: implement_job (add first_run detection, add restart capability)",
+      "3. Execute: implement_load (verify idempotent upsert implementation)",
+      "4. Execute: setup_flow_structure (update config to use DYNAMODB_TABLE_PREFIX)"
     ]
   },
   "recommendations": [
-    "Fix step_200_group_and_aggregate.py to collect all columns (except excluded) into productos array struct",
-    "Add GZIP compression to step_400_format_output.py for productos JSON string",
+    "Modify step_200_group_and_aggregate to collect all material fields (as struct) except excluded columns into productos array",
+    "Add GZIP compression to step_400_format_output for productos JSON string",
+    "Add logic to detect inactive records from CDC changelog and populate data_to_delete in transform or load",
     "Implement first_run detection in job.py by checking if DynamoDB table is empty",
-    "Implement inactive record identification in job.py from CDC changelog (DELETE operations) and pass to load function",
-    "Consider using num_partitions configuration instead of hardcoded coalesce values in step_200 and step_400"
+    "Implement restart capability in job.py by checking restart flag and truncating table if needed",
+    "Verify DynamoDBLoader portfolio_writer handler implements idempotent upsert correctly",
+    "Update config to use DYNAMODB_TABLE_PREFIX environment variable for table name construction"
   ],
   "implementation_details": {
     "extract": {
@@ -81,23 +105,23 @@
     },
     "transform": {
       "status": "needs_correction",
-      "notes": "Pipeline structure is correct with 4 steps, but step_200 does not include all columns in productos array (only cod_material), and step_400 does not compress with GZIP."
+      "notes": "Pipeline structure is correct but missing: (1) complete material fields in productos array, (2) GZIP compression, (3) deletion detection logic"
     },
     "load": {
-      "status": "partial",
-      "notes": "Correctly implements DynamoDB loading with merge strategy using DynamoDBLoader. Infrastructure for deletes exists but never receives data_to_delete from job.py."
+      "status": "needs_verification",
+      "notes": "Structure is correct for DynamoDB loading with write and delete handlers. Needs verification of idempotent upsert implementation."
     },
     "job": {
       "status": "needs_correction",
-      "notes": "Correctly orchestrates ETL pipeline but missing first_run detection and inactive record identification for deletion."
+      "notes": "Basic ETL orchestration is correct but missing: (1) first_run detection, (2) restart capability"
     },
     "config": {
-      "status": "complete",
-      "notes": "Configuration matches requirements. Uses nested sections correctly. CDC configuration present."
+      "status": "needs_correction",
+      "notes": "Basic configuration is correct but missing DYNAMODB_TABLE_PREFIX usage for table name construction"
     },
     "tests": {
       "status": "complete",
-      "notes": "All tests pass with 100% coverage. Tests cover extract, transform, load, and job modules comprehensively."
+      "notes": "All 21 tests pass. Good test coverage for current implementation. Tests will need updates after implementing missing features."
     }
   }
 }

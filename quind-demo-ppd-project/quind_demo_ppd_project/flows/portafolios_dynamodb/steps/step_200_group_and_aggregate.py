@@ -21,6 +21,11 @@ def step_200_group_and_aggregate(dataframe: DataFrame) -> DataFrame:
         - cod_material into a products array
         - fec_actualizacion_dl (takes max value)
 
+    Optimizations applied:
+        - Filter early (done in step_100) to reduce data size before aggregation
+        - Use column operations (collect_list, max) instead of row operations
+        - GroupBy with multiple keys combined in single operation to minimize shuffles
+
     Args:
         dataframe: Input DataFrame with columns:
             - cod_transaccional: Client transactional code
@@ -39,6 +44,8 @@ def step_200_group_and_aggregate(dataframe: DataFrame) -> DataFrame:
             - productos: Array of material codes
             - fec_actualizacion_dl: Maximum update timestamp
     """
+    # GroupBy with all keys in single operation minimizes shuffle overhead
+    # Spark optimizes the shuffle automatically based on data distribution
     result = dataframe.groupBy(
         "cod_transaccional",
         "cod_org_vent",

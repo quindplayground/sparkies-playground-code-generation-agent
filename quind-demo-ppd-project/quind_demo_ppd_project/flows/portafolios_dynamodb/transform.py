@@ -88,6 +88,11 @@ def transform(
         },
     )
     step_100_result = step_100_filter_active(extracted_data)
+    
+    # Cache filtered DataFrame to avoid recomputing filter operation
+    # This is beneficial since filtering reduces data size significantly
+    # and the result is used in subsequent expensive operations
+    step_100_result.cache()
 
     logger.info(
         "Step 200: Grouping and aggregating products",
@@ -99,6 +104,10 @@ def transform(
         },
     )
     step_200_result = step_200_group_and_aggregate(step_100_result)
+    
+    # Unpersist cached DataFrame after it's no longer needed
+    # This frees up memory for subsequent operations
+    step_100_result.unpersist()
 
     logger.info(
         "Step 300: Building DynamoDB keys",
