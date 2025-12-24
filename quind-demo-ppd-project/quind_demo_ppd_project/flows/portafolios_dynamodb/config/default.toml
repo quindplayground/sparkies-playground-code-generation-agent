@@ -148,6 +148,15 @@ table_name = "portafolios"
 #                 "jdbc:postgresql://host:5432/db.table"
 table_id = "@format {this.local_catalog}.{this.local_db}.{this.output.table_name}"
 
+# DynamoDB configuration
+# Region where the DynamoDB table is located
+# TODO(user): Define the AWS region for the DynamoDB table according to the flow's target requirements
+region = "us-east-1"
+
+# Item size limit in bytes (default: 389120, which is ~380KB, leaving margin for DynamoDB's 400KB limit)
+# Items exceeding this limit will be logged and skipped
+item_size_limit = 389120
+
 # Merge keys for merge operations (if using merge load strategy)
 # These columns are used as primary keys for merge operations
 # Accessed as: vars_instance.vars.output.merge_keys

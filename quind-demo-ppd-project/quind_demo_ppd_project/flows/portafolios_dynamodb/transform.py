@@ -1,23 +1,33 @@
-"""Template transform module for data flow.
+"""Transform module for portafolios_dynamodb flow.
 
-This module handles data transformation logic. Transformations can be simple
-(for basic flows) or complex with multiple steps (for advanced flows).
-
-The transformation pipeline typically includes:
-- Data cleaning and normalization
-- Type casting and validation
-- Joins with reference tables
-- Aggregations and calculations
-- Business logic application
-
-Transformations are organized as a series of steps that can be executed
-sequentially. Each step should be focused on a single transformation concern.
+This module handles data transformation logic for processing portfolio data
+from Iceberg to DynamoDB format. The transformation pipeline includes:
+- Filtering active records
+- Building DynamoDB keys
+- Aggregating productos array
+- Formatting dates
 """
 
 from pyspark.sql import DataFrame, SparkSession
 
 from quind_demo_ppd_project.libs.error_handler import handle_errors
+from quind_demo_ppd_project.libs.logging import get_logger
 from quind_demo_ppd_project.libs.resources import VarsResource
+
+from quind_demo_ppd_project.flows.portafolios_dynamodb.steps.step_100_filter_active import (
+    step_100_filter_active,
+)
+from quind_demo_ppd_project.flows.portafolios_dynamodb.steps.step_200_build_keys import (
+    step_200_build_keys,
+)
+from quind_demo_ppd_project.flows.portafolios_dynamodb.steps.step_300_aggregate_productos import (
+    step_300_aggregate_productos,
+)
+from quind_demo_ppd_project.flows.portafolios_dynamodb.steps.step_400_format_dates import (
+    step_400_format_dates,
+)
+
+logger = get_logger(__name__)
 
 
 @handle_errors
@@ -28,11 +38,13 @@ def transform(
     extracted_data: DataFrame,
     **kwargs
 ) -> DataFrame:
-    """Transform data through transformation pipeline.
+    """Transform portfolio data through transformation pipeline.
 
-    This function orchestrates all transformation steps for the flow. It receives
-    the extracted data and applies a series of transformations to prepare it
-    for loading based on your specific business requirements.
+    This function orchestrates all transformation steps:
+    1. Filter active records (ind_cliente_activo = true AND ind_material_activo = true)
+    2. Build DynamoDB keys (pk, sk, gsi1_pk, gsi1_sk, gsi2_pk, gsi2_sk)
+    3. Aggregate productos array by client combination
+    4. Format fecha_actualizacion as ISO 8601 timestamp
 
     Args:
         job_id: Unique identifier for this job execution (for logging).
@@ -40,79 +52,67 @@ def transform(
         vars_instance: VarsResource instance with configuration.
         extracted_data: Input DataFrame from extraction step.
         **kwargs: Optional parameters based on flow requirements.
-            Only add parameters if your flow specifically requires them.
-            Examples: first_run, incremental, etc.
 
     Returns:
-        Fully transformed DataFrame ready for loading.
-
-    Raises:
-        NotImplementedError: This function must be implemented for your specific flow.
-
-    Example:
-        Simple transformation pipeline:
-        ```python
-        from pyspark.sql import functions as sf
-        from quind_demo_ppd_project.libs.logging import get_logger
-
-        logger = get_logger(__name__)
-
-        # Step 1: Clean data
-        cleaned = extracted_data.dropDuplicates()
-
-        # Step 2: Cast types
-        typed = cleaned.withColumn("date_col", sf.col("date_col").cast("date"))
-
-        # Step 3: Add metadata
-        from quind_demo_ppd_project.libs.common_patterns import current_timestamp_with_tz
-        final = typed.withColumn(
-            "current_timestamp_dwh",
-            current_timestamp_with_tz("yyyy-MM-dd HH:mm:ss", "America/Bogota")
-        )
-
-        return final
-        ```
-
-        Complex transformation with multiple steps:
-        ```python
-        # Import step functions
-        from quind_demo_ppd_project.flows.your_flow.steps import (
-            step_100_clean_data,
-            step_200_cast_types,
-            step_300_join_reference,
-            step_400_aggregate
-        )
-
-        # Execute steps sequentially
-        step_100 = step_100_clean_data(extracted_data)
-        step_200 = step_200_cast_types(step_100)
-        step_300 = step_300_join_reference(spark, vars_instance, step_200)
-        step_400 = step_400_aggregate(step_300)
-
-        return step_400
-        ```
-
-        Transformation with optional parameters (if flow requires):
-        ```python
-        # Only add parameters if your flow specifically needs them
-        first_run = kwargs.get("first_run", True)
-        if first_run:
-            # Full transformation logic
-            return full_transform(extracted_data)
-        else:
-            # Incremental transformation logic
-            return incremental_transform(extracted_data)
-        ```
-
-    Note:
-        - Organize complex transformations into separate step functions
-        - Place step functions in the `steps/` directory
-        - Use logging to track transformation progress
-        - Only add parameters (like first_run) if the flow specifically requires them
-        - Implement transformations based on your business requirements
+        Fully transformed DataFrame ready for loading to DynamoDB with columns:
+        - pk, sk, gsi1_pk, gsi1_sk, gsi2_pk, gsi2_sk: DynamoDB keys
+        - productos: Array of material records (to be compressed to GZIP JSON)
+        - fecha_actualizacion: ISO 8601 timestamp
     """
-    raise NotImplementedError(
-        "Transform function must be implemented. "
-        "Implement your transformation logic based on your business requirements. "
-        "See function docstring for examples."
+    input_table_id = vars_instance.vars.input.table_id
+    output_table_id = vars_instance.vars.output.table_id
+
+    logger.info(
+        "Transformation started",
+        extra={
+            "attributes": {
+                "job_id": job_id,
+                "input_table_id": input_table_id,
+                "output_table_id": output_table_id,
+                "input_rows": extracted_data.count(),
+            }
+        },
     )
+
+    step_100 = step_100_filter_active(extracted_data)
+    logger.info(
+        "Step 100 completed: Filtered active records",
+        extra={"attributes": {"job_id": job_id, "rows_after_filter": step_100.count()}},
+    )
+
+    step_200 = step_200_build_keys(step_100)
+    logger.info(
+        "Step 200 completed: Built DynamoDB keys",
+        extra={"attributes": {"job_id": job_id}},
+    )
+
+    step_300 = step_300_aggregate_productos(step_200)
+    logger.info(
+        "Step 300 completed: Aggregated productos array",
+        extra={
+            "attributes": {
+                "job_id": job_id,
+                "output_rows": step_300.count(),
+            }
+        },
+    )
+
+    step_400 = step_400_format_dates(step_300)
+    logger.info(
+        "Step 400 completed: Formatted dates",
+        extra={"attributes": {"job_id": job_id}},
+    )
+
+    logger.info(
+        "Transformation completed",
+        extra={
+            "attributes": {
+                "job_id": job_id,
+                "input_table_id": input_table_id,
+                "output_table_id": output_table_id,
+                "output_rows": step_400.count(),
+            }
+        },
+    )
+
+    return step_400

@@ -1,24 +1,18 @@
-"""Template load module for data flow.
+"""Load module for portafolios_dynamodb flow.
 
-This module handles loading transformed data to target storage systems.
-The load strategy is determined by your flow requirements and can support
-various strategies (overwrite, merge, append, etc.) depending on your needs.
-
-The target can be any storage system accessible via Spark:
-- Tables (Iceberg, Delta, Hive, etc.)
-- Files (Parquet, CSV, JSON, etc.)
-- Databases (via JDBC)
-- Other systems (DynamoDB, etc.)
-
-Available utilities:
-- Iceberg: Utilities available in quind_demo_ppd_project.libs.iceberg (if using Iceberg)
-- Other systems: Implement appropriate loading logic for your storage system
+This module handles loading transformed portfolio data to DynamoDB using the
+DynamoDBLoader utility. The load strategy uses overwrite mode for the first run
+and supports incremental updates for subsequent runs.
 """
 
 from pyspark.sql import DataFrame, SparkSession
 
+from quind_demo_ppd_project.libs.aws.dynamodb.loader import DynamoDBLoader
 from quind_demo_ppd_project.libs.error_handler import handle_errors
+from quind_demo_ppd_project.libs.logging import get_logger
 from quind_demo_ppd_project.libs.resources import VarsResource
+
+logger = get_logger(__name__)
 
 
 @handle_errors
@@ -29,111 +23,75 @@ def load(
     transformed_data: DataFrame,
     **kwargs
 ) -> None:
-    """Load transformed data to target storage system.
+    """Load transformed portfolio data to DynamoDB.
 
-    This function implements the loading logic for the flow based on your
-    specific requirements. The load strategy should be determined by your
-    flow requirements, not by configuration flags.
+    This function loads the transformed DataFrame to DynamoDB using the DynamoDBLoader.
+    The load strategy is determined by the first_run parameter:
+    - first_run=True: Only writes data (overwrite behavior)
+    - first_run=False: Writes new/updated data and deletes removed records
 
     Args:
         job_id: Unique identifier for this job execution (for logging).
         spark: SparkSession for data processing.
         vars_instance: VarsResource instance with configuration.
-            - vars_instance.vars.output.table_id: Target identifier (table, path, etc.)
-            - vars_instance.vars.output.merge_keys: Keys for merge operations (if using merge)
-            - vars_instance.vars.num_partitions.min_global: Partition count (if applicable)
-        transformed_data: Transformed DataFrame to load.
-        **kwargs: Optional parameters based on flow requirements.
-            Only add parameters if your flow specifically requires them.
-            Examples: first_run, incremental, etc.
-
-    Raises:
-        NotImplementedError: This function must be implemented for your specific flow.
-
-    Example:
-        Overwrite mode to table:
-        ```python
-        transformed_data.write \
-            .mode("overwrite") \
-            .saveAsTable(vars_instance.vars.output.table_id)
-        ```
-
-        Overwrite mode to files:
-        ```python
-        output_path = vars_instance.vars.output.table_id  # Can be a path
-        transformed_data.write \
-            .mode("overwrite") \
-            .parquet(output_path)
-        ```
-
-        Overwrite mode with Iceberg utilities (if using Iceberg):
-        ```python
-        from quind_demo_ppd_project.libs.iceberg.utils import load_overwrite
-
-        load_overwrite(
-            spark=spark,
-            dataframe=transformed_data,
-            table_id=vars_instance.vars.output.table_id,
-            num_partitions=vars_instance.vars.num_partitions.min_global
-        )
-        ```
-
-        Merge mode with Iceberg utilities (if using merge strategy):
-        ```python
-        from quind_demo_ppd_project.libs.iceberg.utils import load_merge
-
-        load_merge(
-            spark=spark,
-            dataframe=transformed_data,
-            table_id=vars_instance.vars.output.table_id,
-            merge_keys=vars_instance.vars.output.merge_keys,
-            num_partitions=vars_instance.vars.num_partitions.min_global
-        )
-        ```
-
-        Merge mode with Delta Lake:
-        ```python
-        from delta.tables import DeltaTable
-
-        delta_table = DeltaTable.forName(spark, vars_instance.vars.output.table_id)
-        delta_table.alias("target") \
-            .merge(
-                transformed_data.alias("source"),
-                "target.id = source.id"  # Your merge condition
-            ) \
-            .whenMatchedUpdateAll() \
-            .whenNotMatchedInsertAll() \
-            .execute()
-        ```
-
-        Load to DynamoDB (example):
-        ```python
-        from quind_demo_ppd_project.libs.aws.dynamodb.loader import DynamoDBLoader
-        
-        loader = DynamoDBLoader(spark, vars_instance)
-        loader.load(transformed_data)
-        ```
-
-        Load with optional parameters (if flow requires):
-        ```python
-        # Only add parameters if your flow specifically needs them
-        first_run = kwargs.get("first_run", True)
-        if first_run:
-            load_overwrite(...)
-        else:
-            load_merge(...)
-        ```
-
-    Note:
-        - Implement load strategy based on your flow requirements, not assumptions
-        - Only add parameters (like first_run) if the flow specifically requires them
-        - Configure merge_keys in [default.output] section of config/default.toml only if using merge
-        - Iceberg utilities are available in quind_demo_ppd_project.libs.iceberg if using Iceberg
-        - You can implement loading for any storage system using appropriate methods
-        - See REFERENCE.md for more information on available utilities
+            - vars_instance.vars.output.table_name: DynamoDB table name
+            - vars_instance.vars.output.region: AWS region for DynamoDB table
+            - vars_instance.vars.output.item_size_limit: Maximum item size in bytes
+        transformed_data: Transformed DataFrame to load with columns:
+            - pk, sk, gsi1_pk, gsi1_sk, gsi2_pk, gsi2_sk: DynamoDB keys
+            - productos: Array of material records
+            - fecha_actualizacion: ISO 8601 timestamp
+        **kwargs: Optional parameters.
+            - first_run (bool): Whether this is the first execution (default: True).
+                If True, only writes data. If False, also processes deletions.
     """
-    raise NotImplementedError(
-        "Load function must be implemented. "
-        "Implement your loading logic based on your target storage system and configuration. "
-        "See function docstring for examples."
+    table_name = vars_instance.vars.output.table_name
+    region = vars_instance.vars.output.region
+    item_size_limit = vars_instance.vars.output.item_size_limit
+    first_run = kwargs.get("first_run", True)
+
+    logger.info(
+        "Loading data to DynamoDB",
+        extra={
+            "attributes": {
+                "job_id": job_id,
+                "table_name": table_name,
+                "region": region,
+                "item_size_limit": item_size_limit,
+                "first_run": first_run,
+                "load_strategy": "overwrite" if first_run else "merge",
+                "rows_to_write": transformed_data.count(),
+            }
+        },
+    )
+
+    loader = DynamoDBLoader(
+        job_id=job_id,
+        vars_instance=vars_instance,
+    )
+
+    empty_delete_schema = transformed_data.select("pk", "sk").schema
+    empty_delete_df = spark.createDataFrame([], schema=empty_delete_schema)
+
+    loader.load(
+        dataframes={
+            "data_to_write": transformed_data,
+            "data_to_delete": empty_delete_df,
+        },
+        first_run=first_run,
+        write_handler="portfolio_writer",
+        delete_handler="delete",
+    )
+
+    logger.info(
+        "Data loaded to DynamoDB successfully",
+        extra={
+            "attributes": {
+                "job_id": job_id,
+                "table_name": table_name,
+                "region": region,
+                "first_run": first_run,
+                "load_strategy": "overwrite" if first_run else "merge",
+            }
+        },
     )
