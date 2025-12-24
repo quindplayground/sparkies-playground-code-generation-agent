@@ -10,7 +10,7 @@ import json
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as sf
-from pyspark.sql.types import BinaryType, StringType
+from pyspark.sql.types import BinaryType
 
 from quind_demo_ppd_project.libs.logging import get_logger
 
@@ -91,26 +91,28 @@ def step_300_aggregate_products(dataframe: DataFrame) -> DataFrame:
     struct_fields = [sf.col(col).alias(col) for col in product_columns]
     product_struct = sf.struct(*struct_fields)
 
-    aggregated = dataframe.groupBy(
-        "pk", "sk", "gsi1_pk", "gsi1_sk", "gsi2_pk", "gsi2_sk"
-    ).agg(
-        sf.collect_list(product_struct).alias("productos_list"),
-        sf.max("fec_actualizacion_dl").alias("fec_actualizacion_dl")
-    ).withColumn(
-        "productos_json",
-        sf.to_json(sf.col("productos_list"))
-    ).withColumn(
-        "productos",
-        _compress_json_udf()(sf.col("productos_json"))
-    ).select(
-        "pk",
-        "sk",
-        "gsi1_pk",
-        "gsi1_sk",
-        "gsi2_pk",
-        "gsi2_sk",
-        "productos",
-        "fec_actualizacion_dl"
+    compress_udf = _compress_json_udf()
+
+    aggregated = (
+        dataframe
+        .repartition("pk", "sk", "gsi1_pk", "gsi1_sk", "gsi2_pk", "gsi2_sk")
+        .groupBy(
+            "pk", "sk", "gsi1_pk", "gsi1_sk", "gsi2_pk", "gsi2_sk"
+        )
+        .agg(
+            sf.collect_list(product_struct).alias("productos_list"),
+            sf.max("fec_actualizacion_dl").alias("fec_actualizacion_dl")
+        )
+        .select(
+            "pk",
+            "sk",
+            "gsi1_pk",
+            "gsi1_sk",
+            "gsi2_pk",
+            "gsi2_sk",
+            compress_udf(sf.to_json(sf.col("productos_list"))).alias("productos"),
+            "fec_actualizacion_dl"
+        )
     )
 
     return aggregated

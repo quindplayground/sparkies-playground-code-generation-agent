@@ -25,33 +25,23 @@ def step_200_build_keys(dataframe: DataFrame) -> DataFrame:
     Returns:
         DataFrame with DynamoDB key columns added.
     """
-    result = dataframe.withColumn(
-        "pk",
-        sf.col("cod_transaccional").cast("string")
-    ).withColumn(
-        "sk",
+    result = dataframe.select(
+        "*",
+        sf.col("cod_transaccional").cast("string").alias("pk"),
         sf.concat_ws(
             "#",
             sf.col("cod_org_vent").cast("string"),
             sf.col("cod_canal").cast("string"),
             sf.col("cod_vendedor").cast("string")
-        )
-    ).withColumn(
-        "gsi1_pk",
-        sf.col("cod_org_vent").cast("string")
-    ).withColumn(
-        "gsi1_sk",
+        ).alias("sk"),
+        sf.col("cod_org_vent").cast("string").alias("gsi1_pk"),
         sf.concat_ws(
             "#",
             sf.col("cod_canal").cast("string"),
             sf.col("cod_transaccional").cast("string")
-        )
-    ).withColumn(
-        "gsi2_pk",
-        sf.col("cod_vendedor").cast("string")
-    ).withColumn(
-        "gsi2_sk",
-        sf.col("cod_transaccional").cast("string")
+        ).alias("gsi1_sk"),
+        sf.col("cod_vendedor").cast("string").alias("gsi2_pk"),
+        sf.col("cod_transaccional").cast("string").alias("gsi2_sk")
     )
 
     return result

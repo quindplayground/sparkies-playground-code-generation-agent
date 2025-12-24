@@ -25,4 +25,7 @@ def step_100_filter_active(dataframe: DataFrame) -> DataFrame:
         & (sf.col("ind_material_activo") == True)
     )
 
+    num_partitions = dataframe.rdd.getNumPartitions()
+    if num_partitions > 200:
+        return filtered.coalesce(200)
     return filtered
