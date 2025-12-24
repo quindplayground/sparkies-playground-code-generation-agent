@@ -148,6 +148,24 @@ table_name = "portafolios"
 #                 "jdbc:postgresql://host:5432/db.table"
 table_id = "@format {this.local_catalog}.{this.local_db}.{this.output.table_name}"
 
+# DynamoDB-specific configuration
+# TODO(user): Define the DynamoDB table name according to the flow's target requirements
+# Expected format: portafolio-cliente-{environment}
+# This should be set in [default.output] section and will override the table_name above
+# Example: table_name = "@format portafolio-cliente-{env[RESOURCE_SUFFIX]}"
+# Note: The DynamoDBLoader expects vars_instance.vars.output.table_name
+
+# TODO(user): Define the AWS region where the DynamoDB table is located
+# This should be set in [default.output] section
+# Example: region = "@format {env[AWS_REGION]}" or region = "us-east-1"
+# Note: The DynamoDBLoader expects vars_instance.vars.output.region
+
+# TODO(user): Define the item size limit for DynamoDB (in bytes)
+# This should be set in [default.output] section
+# Default: 400000 (400KB, DynamoDB limit is 400KB per item)
+# Example: item_size_limit = 400000
+# Note: The DynamoDBLoader expects vars_instance.vars.output.item_size_limit
+
 # Merge keys for merge operations (if using merge load strategy)
 # These columns are used as primary keys for merge operations
 # Accessed as: vars_instance.vars.output.merge_keys
