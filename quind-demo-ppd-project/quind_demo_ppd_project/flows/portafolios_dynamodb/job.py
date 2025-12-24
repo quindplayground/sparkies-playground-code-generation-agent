@@ -61,7 +61,7 @@ def portafolios_dynamodb_job(spark: SparkSession, vars_instance: VarsResource) -
     logger = get_logger(__name__)
 
     start_time = time.time()
-    job_id = f"portafolios_dynamodb_{int(start_time)}"
+    job_id = f"portafolios_dynamodb_{time.time_ns()}"
 
     # Get component name from configuration
     component_name = vars_instance.vars.get("component_name", "portafolios_dynamodb")
