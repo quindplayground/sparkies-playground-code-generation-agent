@@ -148,6 +148,17 @@ table_name = "portafolios"
 #                 "jdbc:postgresql://host:5432/db.table"
 table_id = "@format {this.local_catalog}.{this.local_db}.{this.output.table_name}"
 
+# DynamoDB configuration
+# TODO(user): Define the DynamoDB table name according to the flow's target requirements
+# Note: This is different from table_name above, which is used for Spark catalog table_id
+# table_name = "portafolios_dynamodb_table"
+
+# TODO(user): Define the AWS region where the DynamoDB table is located according to the requirements
+# region = "us-east-1"
+
+# TODO(user): Define the item size limit for DynamoDB items (default: 400000 bytes = 400KB)
+# item_size_limit = 400000
+
 # Merge keys for merge operations (if using merge load strategy)
 # These columns are used as primary keys for merge operations
 # Accessed as: vars_instance.vars.output.merge_keys

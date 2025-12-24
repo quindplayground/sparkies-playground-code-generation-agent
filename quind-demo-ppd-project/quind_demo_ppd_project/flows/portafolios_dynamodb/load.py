@@ -1,24 +1,21 @@
-"""Template load module for data flow.
+"""Load module for portafolios_dynamodb flow.
 
-This module handles loading transformed data to target storage systems.
-The load strategy is determined by your flow requirements and can support
-various strategies (overwrite, merge, append, etc.) depending on your needs.
-
-The target can be any storage system accessible via Spark:
-- Tables (Iceberg, Delta, Hive, etc.)
-- Files (Parquet, CSV, JSON, etc.)
-- Databases (via JDBC)
-- Other systems (DynamoDB, etc.)
-
-Available utilities:
-- Iceberg: Utilities available in quind_demo_ppd_project.libs.iceberg (if using Iceberg)
-- Other systems: Implement appropriate loading logic for your storage system
+This module handles loading transformed portafolios data to DynamoDB using
+the DynamoDBLoader utility. The load strategy supports both first run
+(overwrite) and incremental updates based on the first_run parameter.
 """
 
 from pyspark.sql import DataFrame, SparkSession
 
+from quind_demo_ppd_project.libs.aws.dynamodb.loader import DynamoDBLoader
+from quind_demo_ppd_project.libs.aws.dynamodb.loader.types import (
+    InputDynamoDBLoaderDataFrame,
+)
 from quind_demo_ppd_project.libs.error_handler import handle_errors
+from quind_demo_ppd_project.libs.logging import get_logger
 from quind_demo_ppd_project.libs.resources import VarsResource
+
+logger = get_logger(__name__)
 
 
 @handle_errors
@@ -27,113 +24,93 @@ def load(
     spark: SparkSession,
     vars_instance: VarsResource,
     transformed_data: DataFrame,
-    **kwargs
+    **kwargs,
 ) -> None:
-    """Load transformed data to target storage system.
+    """Load transformed portafolios data to DynamoDB.
 
-    This function implements the loading logic for the flow based on your
-    specific requirements. The load strategy should be determined by your
-    flow requirements, not by configuration flags.
+    This function loads portafolios data to DynamoDB using the DynamoDBLoader.
+    The load strategy supports:
+    - First run (first_run=True): Only writes data, no deletions
+    - Incremental (first_run=False): Writes new/updated data and deletes removed items
 
     Args:
         job_id: Unique identifier for this job execution (for logging).
         spark: SparkSession for data processing.
         vars_instance: VarsResource instance with configuration.
-            - vars_instance.vars.output.table_id: Target identifier (table, path, etc.)
-            - vars_instance.vars.output.merge_keys: Keys for merge operations (if using merge)
-            - vars_instance.vars.num_partitions.min_global: Partition count (if applicable)
-        transformed_data: Transformed DataFrame to load.
-        **kwargs: Optional parameters based on flow requirements.
-            Only add parameters if your flow specifically requires them.
-            Examples: first_run, incremental, etc.
-
-    Raises:
-        NotImplementedError: This function must be implemented for your specific flow.
+            - vars_instance.vars.output.table_name: DynamoDB table name
+            - vars_instance.vars.output.region: AWS region for DynamoDB table
+            - vars_instance.vars.output.item_size_limit: Maximum item size in bytes
+        transformed_data: Transformed DataFrame ready for DynamoDB loading.
+        **kwargs: Optional parameters.
+            - first_run (bool): Whether this is the first execution (default: True).
+              When True, only writes data. When False, also processes deletions.
 
     Example:
-        Overwrite mode to table:
         ```python
-        transformed_data.write \
-            .mode("overwrite") \
-            .saveAsTable(vars_instance.vars.output.table_id)
-        ```
-
-        Overwrite mode to files:
-        ```python
-        output_path = vars_instance.vars.output.table_id  # Can be a path
-        transformed_data.write \
-            .mode("overwrite") \
-            .parquet(output_path)
-        ```
-
-        Overwrite mode with Iceberg utilities (if using Iceberg):
-        ```python
-        from quind_demo_ppd_project.libs.iceberg.utils import load_overwrite
-
-        load_overwrite(
+        load(
+            job_id="portafolios_1234567890",
             spark=spark,
-            dataframe=transformed_data,
-            table_id=vars_instance.vars.output.table_id,
-            num_partitions=vars_instance.vars.num_partitions.min_global
+            vars_instance=vars_instance,
+            transformed_data=transformed_data
         )
         ```
 
-        Merge mode with Iceberg utilities (if using merge strategy):
+        With first_run parameter:
         ```python
-        from quind_demo_ppd_project.libs.iceberg.utils import load_merge
-
-        load_merge(
+        load(
+            job_id="portafolios_1234567890",
             spark=spark,
-            dataframe=transformed_data,
-            table_id=vars_instance.vars.output.table_id,
-            merge_keys=vars_instance.vars.output.merge_keys,
-            num_partitions=vars_instance.vars.num_partitions.min_global
+            vars_instance=vars_instance,
+            transformed_data=transformed_data,
+            first_run=False
         )
         ```
-
-        Merge mode with Delta Lake:
-        ```python
-        from delta.tables import DeltaTable
-
-        delta_table = DeltaTable.forName(spark, vars_instance.vars.output.table_id)
-        delta_table.alias("target") \
-            .merge(
-                transformed_data.alias("source"),
-                "target.id = source.id"  # Your merge condition
-            ) \
-            .whenMatchedUpdateAll() \
-            .whenNotMatchedInsertAll() \
-            .execute()
-        ```
-
-        Load to DynamoDB (example):
-        ```python
-        from quind_demo_ppd_project.libs.aws.dynamodb.loader import DynamoDBLoader
-        
-        loader = DynamoDBLoader(spark, vars_instance)
-        loader.load(transformed_data)
-        ```
-
-        Load with optional parameters (if flow requires):
-        ```python
-        # Only add parameters if your flow specifically needs them
-        first_run = kwargs.get("first_run", True)
-        if first_run:
-            load_overwrite(...)
-        else:
-            load_merge(...)
-        ```
-
-    Note:
-        - Implement load strategy based on your flow requirements, not assumptions
-        - Only add parameters (like first_run) if the flow specifically requires them
-        - Configure merge_keys in [default.output] section of config/default.toml only if using merge
-        - Iceberg utilities are available in quind_demo_ppd_project.libs.iceberg if using Iceberg
-        - You can implement loading for any storage system using appropriate methods
-        - See REFERENCE.md for more information on available utilities
     """
-    raise NotImplementedError(
-        "Load function must be implemented. "
-        "Implement your loading logic based on your target storage system and configuration. "
-        "See function docstring for examples."
+    table_name = vars_instance.vars.output.table_name
+    region = vars_instance.vars.output.region
+    item_size_limit = vars_instance.vars.output.get("item_size_limit", 400000)
+    first_run = kwargs.get("first_run", True)
+
+    logger.info(
+        "Loading data to DynamoDB",
+        extra={
+            "attributes": {
+                "job_id": job_id,
+                "table_name": table_name,
+                "region": region,
+                "load_strategy": "first_run" if first_run else "incremental",
+                "item_size_limit": item_size_limit,
+            }
+        },
+    )
+
+    loader = DynamoDBLoader(
+        job_id=job_id,
+        vars_instance=vars_instance,
+    )
+
+    empty_delete_df = spark.createDataFrame([], transformed_data.schema)
+
+    dataframes: InputDynamoDBLoaderDataFrame = {
+        "data_to_write": transformed_data,
+        "data_to_delete": empty_delete_df,
+    }
+
+    loader.load(
+        dataframes=dataframes,
+        first_run=first_run,
+        write_handler="portfolio_writer",
+        delete_handler="delete",
+    )
+
+    logger.info(
+        "Data loaded to DynamoDB",
+        extra={
+            "attributes": {
+                "job_id": job_id,
+                "table_name": table_name,
+                "region": region,
+                "load_strategy": "first_run" if first_run else "incremental",
+            }
+        },
     )
